@@ -44,5 +44,9 @@ Take this specification and create a TODO list with checkboxes to help implement
 Use the software requirements (specification.md) and the TODO list (TODO.md) to complete Phase 1 of the project in the current directory. Mark items as done in the TODO list only after verifying that the acceptance criteria have been met.
 ```
 
+```
+specification.md와 TODO.md를 참고하여 TODO 리스트 중 `1. 다섯 알고리즘: 한 항목씩 구현·검증`를 실행해줘. 세부 테스크 실행이 완료되고 이상이 없다면, TODO.md 파일의 해당 테스크를 완료처리 해줘. @ch04_rate_limiter/docs/TODO.md  @ch04_rate_limiter/docs/specification.md
+```
+
 - Agent가 실행되는 과정에 필요한 승인을 해주고, 생성된 결과를 확인한다.
 - 생성된 결과에 수정이 필요하다면 Agent에 수정 명령을 줘서 수정한다.

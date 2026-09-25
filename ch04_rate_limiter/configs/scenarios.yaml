@@ -1,0 +1,52 @@
+# 요청 시나리오 (docs/specification.md 5절)
+#
+# 시나리오 = 구성 요소(components)의 합. 구성 요소 종류:
+#   poisson     : users명의 사용자가 각자 평균 rate_per_user req/s로 [start_ms, end_ms)에 독립 Poisson 도착
+#   burst       : client_id 한 명이 at_ms 시각에 count건을 동시에 보냄
+#   unique_keys : keys개의 서로 다른 키가 [start_ms, end_ms) 안의 무작위 시각에 한 번씩 요청
+#
+# 같은 seed면 항상 같은 CSV가 만들어진다. poisson 구성 요소의 난수는
+# (seed, 구성 요소 순번, 사용자)로 정해지므로, overload의 0번 구성 요소는 normal과 똑같은 요청을 만든다.
+# 즉 overload = normal + 20~25초 추가 트래픽 이다.
+# 시간 단위는 정수 ms, 속도 단위는 req/s.
+version: 1
+
+defaults:
+  seed: 42
+  rule_id: user_default
+  endpoint: /work
+  method: GET
+  instance_id: local
+
+scenarios:
+  normal:
+    description: 사용자 100명, 각자 평균 5 req/s 독립 Poisson, 60초
+    duration_ms: 60000
+    components:
+      - {type: poisson, client_prefix: user, users: 100, rate_per_user: 5, start_ms: 0, end_ms: 60000}
+
+  overload:
+    description: normal + 20~25초에 같은 사용자들에게 기본의 10배(50 req/s/user) 추가
+    duration_ms: 60000
+    components:
+      - {type: poisson, client_prefix: user, users: 100, rate_per_user: 5, start_ms: 0, end_ms: 60000}
+      - {type: poisson, client_prefix: user, users: 100, rate_per_user: 50, start_ms: 20000, end_ms: 25000}
+
+  boundary:
+    description: 같은 키로 0.99초에 10건, 1.01초에 10건 (고정 윈도 경계 문제)
+    duration_ms: 2000
+    components:
+      - {type: burst, client_id: user-boundary, at_ms: 990, count: 10}
+      - {type: burst, client_id: user-boundary, at_ms: 1010, count: 10}
+
+  unique_keys:
+    description: 30~40초 사이에 서로 다른 키 10,000개가 한 번씩 요청 (키 수 증가·유휴 키 제거)
+    duration_ms: 60000
+    components:
+      - {type: unique_keys, client_prefix: key, keys: 10000, start_ms: 30000, end_ms: 40000}
+
+  hot_key:
+    description: 사용자 1명이 같은 시각(0ms)에 100건 동시 요청
+    duration_ms: 1000
+    components:
+      - {type: burst, client_id: user-hot, at_ms: 0, count: 100}
