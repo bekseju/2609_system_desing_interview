@@ -1,0 +1,18 @@
+# 기본 제한 정책 (docs/specification.md 3절)
+# 같은 수치라도 알고리즘마다 의미가 다르다:
+#   - fixed/sliding window: window_ms 동안 limit 건
+#   - token bucket: 용량 bucket_capacity, 초당 refill_per_sec 개 재충전
+#   - leaking bucket: 큐 길이 queue_capacity, 초당 leak_per_sec 건 처리
+# 시간 단위는 정수 ms, 속도 단위는 건/초.
+version: 1
+
+rules:
+  - rule_id: user_default
+    scope: user            # global | user | ip | endpoint
+    limit: 10
+    window_ms: 1000
+    bucket_capacity: 10
+    refill_per_sec: 10
+    queue_capacity: 10
+    leak_per_sec: 10
+    idle_ttl_ms: 2000      # 마지막 접근 이후 이 시간이 지나면 유휴 키 상태 제거

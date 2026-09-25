@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rate-limit-lab"
+version = "0.1.0"
+description = "Rate limiter algorithm comparison lab (System Design Interview ch.4)"
+requires-python = ">=3.12"
+dependencies = [
+    "PyYAML==6.0.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.1.1",
+]
+
+[tool.setuptools.packages.find]
+include = ["rate_limit_lab*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

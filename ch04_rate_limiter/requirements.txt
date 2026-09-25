@@ -1,0 +1,9 @@
+# 고정 의존성 (pip freeze 결과, Python 3.13.5 / Windows 11에서 확인)
+# 설치: python -m pip install -r requirements.txt && python -m pip install -e . --no-deps
+colorama==0.4.6
+iniconfig==2.3.0
+packaging==26.3
+pluggy==1.6.0
+Pygments==2.21.0
+pytest==9.1.1
+PyYAML==6.0.3
