@@ -80,6 +80,14 @@ class LeakingBucket(RateLimiter):
         last = max((entry[0] for entry in self._heap), default=self._now_ms or 0)
         return self.drain(max(last, self._now_ms or 0))
 
+    def next_due_ms(self) -> int | None:
+        """가장 먼저 처리 완료될 요청의 예정 시각 (대기 요청이 없으면 None). HTTP 작업자용."""
+        return self._heap[0][0] if self._heap else None
+
+    def pending_events(self) -> bool:
+        """처리 완료됐지만 아직 drain으로 꺼내지 않은 이벤트가 있으면 True."""
+        return bool(self._outbox)
+
     def queue_length(self, key: str) -> int:
         state = self._states.get(key)
         return len(state.pending) if state else 0

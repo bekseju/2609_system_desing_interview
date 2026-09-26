@@ -56,21 +56,21 @@
 
 ## 3. 로컬 측정과 보고서
 
-- [ ] 3.1 `decide` 전후 시간, 처리량, 허용·거절·접수·처리·오류·타임아웃 건수를 집계한다. 상태 합계와 입력 건수가 일치하는지 확인한다.
-- [ ] 3.2 100ms·1초 구간별 도착·허용·실제 처리 건수와 이동 1초 최대 허용량을 계산한다. 양 끝점 `[start,end)`를 검증한다.
-- [ ] 3.3 결정 지연 p50/p95/p99/max와 누출 버킷 큐 대기 지연 p50/p95/p99를 계산한다. 측정 대상이 없는 경우를 빈 값으로 처리한다.
-- [ ] 3.4 `tracemalloc` 추적 peak, 프로세스 RSS peak, 활성 키·로그 엔트리 수 및 제거 전후 상태를 별도 지표로 기록한다.
-- [ ] 3.5 `results/<UTC timestamp>/<scenario>/<algorithm>/<backend>/<replicate>/`에 `requests.csv`, `timeseries.csv`, `summary.json`, `environment.json`을 생성한다. 설정·seed·CPU·OS·Python 버전·실행 명령도 저장한다.
-- [ ] 3.6 `comparison.csv`, 시간대별 결과·p95 지연·메모리 PNG 및 `report.md`를 만든다. 같은 입력·정책·백엔드끼리 비교하고 측정 범위와 단위를 명시한다.
-- [ ] 3.7 `scripts/run_experiment.py` 한 명령으로 생성→재생→보고서를 실행하고 실험 폴더 재현 방법을 README에 적는다.
+- [x] 3.1 `decide` 전후 시간, 처리량, 허용·거절·접수·처리·오류·타임아웃 건수를 집계한다. 상태 합계와 입력 건수가 일치하는지 확인한다.
+- [x] 3.2 100ms·1초 구간별 도착·허용·실제 처리 건수와 이동 1초 최대 허용량을 계산한다. 양 끝점 `[start,end)`를 검증한다.
+- [x] 3.3 결정 지연 p50/p95/p99/max와 누출 버킷 큐 대기 지연 p50/p95/p99를 계산한다. 측정 대상이 없는 경우를 빈 값으로 처리한다.
+- [x] 3.4 `tracemalloc` 추적 peak, 프로세스 RSS peak, 활성 키·로그 엔트리 수 및 제거 전후 상태를 별도 지표로 기록한다.
+- [x] 3.5 `results/<UTC timestamp>/<scenario>/<algorithm>/<backend>/<replicate>/`에 `requests.csv`, `timeseries.csv`, `summary.json`, `environment.json`을 생성한다. 설정·seed·CPU·OS·Python 버전·실행 명령도 저장한다.
+- [x] 3.6 `comparison.csv`, 시간대별 결과·p95 지연·메모리 PNG 및 `report.md`를 만든다. 같은 입력·정책·백엔드끼리 비교하고 측정 범위와 단위를 명시한다.
+- [x] 3.7 `scripts/run_experiment.py` 한 명령으로 생성→재생→보고서를 실행하고 실험 폴더 재현 방법을 README에 적는다.
 
 ## 4. HTTP API와 실제 부하
 
-- [ ] 4.1 `GET /work?client_id=...`에 정책 선택과 200/429 응답을 구현한다. 적용 가능한 `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `Retry-After`를 검증한다.
-- [ ] 4.2 누출 버킷의 202(큐 접수), 비동기 처리 완료 이벤트와 큐 포화 시 429를 구현한다. 접수와 처리 완료를 별도 조회·기록할 수 있게 한다.
-- [ ] 4.3 동일 CSV를 벽시계 속도로 보내는 부하 발생기를 구현한다. 발송 지연, HTTP 왕복 지연, API 내부 결정 지연을 혼합하지 않고 수집한다.
-- [ ] 4.4 예열 10초·측정 60초, 인스턴스 1/2/4, 동시성 1/32/128, 3회 반복을 실행 가능한 옵션으로 만든다. 축소 설정도 제공하고 각 회차를 독립 저장한다.
-- [ ] 4.5 실제 HTTP 실험의 타임아웃·전송 오류·429를 분리하여 기록하고 결과 요약을 검증한다.
+- [x] 4.1 `GET /work?client_id=...`에 정책 선택과 200/429 응답을 구현한다. 적용 가능한 `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `Retry-After`를 검증한다.
+- [x] 4.2 누출 버킷의 202(큐 접수), 비동기 처리 완료 이벤트와 큐 포화 시 429를 구현한다. 접수와 처리 완료를 별도 조회·기록할 수 있게 한다.
+- [x] 4.3 동일 CSV를 벽시계 속도로 보내는 부하 발생기를 구현한다. 발송 지연, HTTP 왕복 지연, API 내부 결정 지연을 혼합하지 않고 수집한다.
+- [x] 4.4 예열 10초·측정 60초, 인스턴스 1/2/4, 동시성 1/32/128, 3회 반복을 실행 가능한 옵션으로 만든다. 축소 설정도 제공하고 각 회차를 독립 저장한다.
+- [x] 4.5 실제 HTTP 실험의 타임아웃·전송 오류·429를 분리하여 기록하고 결과 요약을 검증한다.
 
 ## 5. 두 인스턴스와 Redis: 동기화·race 재현
 
@@ -132,3 +132,15 @@
 | 2026-09-25 | 2.6  | `results/scenarios/hot_key-seed42/`                                                                                                                                                                     | 0ms 100건, ID r00000001~r00000100 연속. 입력을 뒤집어도 6개 구현 모두 r…01~r…10만 수락                                                                                                                                                                                                                           |
 | 2026-09-25 | 2.7  | `rate_limit_lab/load/replay.py`, `python -m rate_limit_lab.load.run_replay <requests.csv>` → `replay/<알고리즘>/{decisions,events}.csv, summary.json`; `tests/test_replay.py`                           | 요청마다 arrival·decision(·processed) 이벤트, 시간순. 입력 순서를 섞어도 판정·이벤트·통계 동일. overload `--no-latency` 2회 → 출력 20개 파일 해시 동일. 누출 버킷 최종 상태 `processed`, 처리 이동 1초 최대 ≤10                                                                                                  |
 | 2026-09-25 | 2.8  | `rate_limit_lab/metrics/accuracy.py` → `replay/accuracy.{json,csv}`; `tests/test_accuracy.py`                                                                                                           | sliding_counter vs strict: boundary false allow 1(5%), normal FA 406(1.35%)/FR 77(0.26%), overload FA 3,685(6.71%)/FR 3,335(6.07%). 나머지는 `policy_difference`로 표시. 확인된 성질: PDF 로그는 false allow 0, token·leaking bucket은 수락 요청이 동일(차이는 처리 시각). 전체 `python -m pytest -q` 306 passed |
+| 2026-09-26 | 3.1 | `rate_limit_lab/metrics/summary.py`; `tests/test_local_metrics.py` | 상태 6종(allowed/rejected/queued/processed/error/timeout) + accepted·admitted_to_queue·처리량(입력÷재생 벽시계). `check_consistency`로 합계=입력 검사, 90개 회차 모두 통과. 로컬 처리량 예: overload 누출 버킷 약 45,900 req/s |
+| 2026-09-26 | 3.2 | `rate_limit_lab/metrics/timeseries.py` → `timeseries.csv` | 100ms·1초 [start,end) 구간별 arrivals/accepted/rejected/processed/served. 99→0번, 100→1번, 999→0번, 1000→1번 구간 테스트. 이동 1초 최대(전체·키당) 기록: normal 키당 최대 수락 sliding_log 10, sliding_counter 14, fixed_window 16, token/leaking 18, 누출 버킷 수행 10 |
+| 2026-09-26 | 3.3 | `summary.json`의 `decision_latency_us`, `queue_wait_ms` | nearest-rank p50/p95/p99/max. 값이 없으면 count 0·나머지 null. normal 판정 p95 2.8~3.9µs(중앙값 3회). 누출 버킷 큐 대기 normal 100/304/432ms, overload 143/993/999ms |
+| 2026-09-26 | 3.4 | `rate_limit_lab/metrics/memory.py`, `run_local.py` | 재생을 3번: ①지연(추적 없음) ②tracemalloc 전체 ③기록 없이 판정만(≈알고리즘 상태). ①②판정 일치(`replay_consistent`). 상태 peak: normal 로그 137.7KB vs 카운터 10~11KB, unique_keys 로그 2.57MB vs 카운터 0.35MB. RSS peak는 프로세스 단위라 회차마다 새 프로세스. 활성 키 제거 전후: unique_keys 3,038 → 2,026 |
+| 2026-09-26 | 3.5 | `results/20260926T072928Z/<시나리오>/<알고리즘>/memory/r{1,2,3}/` | 네 파일(requests.csv=요청+판정, timeseries.csv, summary.json, environment.json). environment에 CPU(i7-10510U, 8 논리 코어)·OS·Python 3.13.5·패키지 버전·규칙·seed·실행 명령 |
+| 2026-09-26 | 3.6 | `rate_limit_lab/metrics/report.py` → `results/20260926T072928Z/{comparison.csv, report.md, timeseries_*.png, latency_p95_memory.png, memory_memory.png}` | 같은 시나리오·규칙·백엔드끼리 표, 측정 범위·단위 표, 정책 의미 표, strict 대비 판정 차이, 정합성 검사, `not_run` 목록. 그래프 색은 dataviz 기본 팔레트 1~6(검증 통과, 대비 부족 3색은 값 직접 표기 + 표로 보완) |
+| 2026-09-26 | 3.7 | `python scripts/run_experiment.py` → `results/20260926T072928Z/` (5 시나리오 × 6 알고리즘 × 3회 = 90회차) | 한 명령으로 생성→재생→보고서. 정합성 문제 0, `not_run` 0. `--quick` 축소 설정 제공. 재현 방법 README에 기록. 전체 `python -m pytest -q` 343 passed |
+| 2026-09-26 | 4.1 | `rate_limit_lab/api/server.py`; `tests/test_api.py` | aiohttp. `GET /work` 200/429, `X-RateLimit-Limit`(창=limit, 토큰=용량, 누출=큐 용량), `X-RateLimit-Remaining`, `Retry-After`(ceil 초, 최소 1) + `X-RateLimit-Retry-After-Ms`, `X-Decision-Us`. 헤더 정확도 한계는 server.py 상단에 문서화. 400(client_id 누락·알 수 없는 rule_id) |
+| 2026-09-26 | 4.2 | 같은 파일; `tests/test_api.py` | 누출 버킷 202 + `status_url`, 비동기 작업자가 처리 예정 시각에 이벤트 기록. `GET /requests/{id}`(queued→processed), `GET /events?after=N`(커서). 큐 포화 429(retry 100ms). 실시간 테스트에서 처리 간격 ≥100ms |
+| 2026-09-26 | 4.3 | `rate_limit_lab/load/http_load.py`; `tests/test_http_load.py` | 같은 CSV를 벽시계 예정 시각에 발송. 요청마다 send_lag_ms·rtt_ms·server_decision_us 분리 기록. 동시성 상한 초과 시 발송 지연으로 반영(동시성 1·작업 100ms → 마지막 지연 >350ms). 예열은 `warmup-` 접두 키로 분리 |
+| 2026-09-26 | 4.4 | `scripts/run_http_experiment.py`; (a) `--quick --exp-dir results/20260926T072928Z` 8조합, (b) 명세 길이(예열 10초·측정 60초) i1-c32 token/leaking → `results/20260926T074105Z`, (c) i4-c128 × 3회(측정 10초) | 조합마다 서버 새로 기동·종료, 회차별 독립 폴더(`http-i<N>-c<C>/r<k>`). 명세 전체(5 알고리즘 × 3 × 3 × 3회 × 70초 ≈ 3시간)는 옵션으로만 제공하고 **실행하지 않음**. (b) normal 30,006건 전부 200/202, rtt p95 5.7/8.8ms |
+| 2026-09-26 | 4.5 | `tests/test_http_load.py`; overload i1-c128 30초 → `results/20260926T074105Z/overload/` | 타임아웃(작업 1초·제한 0.3초 → 10건)·전송 오류(없는 인스턴스 → 5건)·429 분리 검증, `check_consistency` 통과. 실제 overload: 토큰 200 19,377 / 429 20,486, 누출 202 23,005 / 429 16,858, 타임아웃·오류 0. 단, 발송 지연 p95 1.9s/5.9s — 부하 발생기가 초당 5,500건 몰림을 제때 못 보내 도착이 퍼짐(로컬 판정과 직접 비교 불가) |

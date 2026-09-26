@@ -285,3 +285,34 @@ def write_decisions(path: Path, decisions: Iterable[Decision]) -> None:
 
 def read_decisions(path: Path) -> list[Decision]:
     return _read_csv(path, DECISION_FIELDS, decision_from_row)
+
+
+# 요청 원본 + 판정 결과를 한 줄로 합친 형식 (실험 결과 폴더의 requests.csv)
+RESULT_FIELDS: tuple[str, ...] = REQUEST_FIELDS + DECISION_FIELDS[1:]
+
+
+@dataclass(frozen=True, slots=True)
+class RequestResult:
+    request: Request
+    decision: Decision
+
+    @property
+    def request_id(self) -> str:
+        return self.request.request_id
+
+
+def _result_from_row(row: Mapping[str, str]) -> RequestResult:
+    return RequestResult(request_from_row(row), decision_from_row(row))
+
+
+def write_request_results(path: Path, requests: Iterable[Request], decisions: Iterable[Decision]) -> None:
+    rows = []
+    for request, decision in zip(requests, decisions, strict=True):
+        if request.request_id != decision.request_id:
+            raise RecordError(f"요청 {request.request_id}와 판정 {decision.request_id}의 순서가 다릅니다")
+        rows.append({**request_to_row(request), **decision_to_row(decision)})
+    _write_csv(path, RESULT_FIELDS, rows)
+
+
+def read_request_results(path: Path) -> list[RequestResult]:
+    return _read_csv(path, RESULT_FIELDS, _result_from_row)

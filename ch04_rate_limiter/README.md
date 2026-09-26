@@ -56,6 +56,8 @@ rate_limit_lab/
 configs/rules.yaml # 기본 정책: 사용자별 10건/초, 버킷·큐 10, 재충전·누출 10건/초
 configs/scenarios.yaml  # 요청 시나리오 5종 (seed 기반)
 scripts/
+├── run_experiment.py            # 로컬 실험: 생성 → 재생·측정 → 보고서 (3단계)
+├── run_http_experiment.py       # HTTP 부하 실험 (4단계)
 └── leaking_bucket_sustained.py  # 누출 버킷 지속 부하: 처리 속도·대기 시간 측정
 tests/
 results/           # 실행 시 생성 (git 제외)
@@ -100,6 +102,62 @@ python -m rate_limit_lab.load.run_replay results/scenarios/boundary-seed42/reque
 
 `accuracy.json`의 `interpretation`이 `approximation_error`인 것은 sliding_counter뿐이다.
 나머지 알고리즘은 정책 의미가 달라서, 기준과 다르게 판정해도 오류가 아니라 **정책 차이**다(`policy_semantics` 참고).
+
+### 로컬 실험 한 번에 실행 (3단계)
+
+```bash
+python scripts/run_experiment.py          # 시나리오 5 × 알고리즘 6 × 3회 (이 PC에서 약 6분)
+python scripts/run_experiment.py --quick  # 축소: boundary·hot_key·normal × 6 × 1회 (약 1분)
+python scripts/run_experiment.py --scenarios boundary --algorithms fixed_window sliding_log --replicates 2
+python -m rate_limit_lab.metrics.report results/<UTC timestamp>   # 보고서만 다시 만들기
+```
+
+결과 폴더 `results/<UTC timestamp>/`:
+
+```text
+experiment.json                  실행 명령·계획(plan)·입력 CSV 해시
+inputs/<시나리오>/                requests.csv, scenario.json (생성된 입력)
+<시나리오>/<알고리즘>/memory/r<N>/
+    requests.csv                 요청 원본 + 판정 결과 (요청마다 한 줄)
+    timeseries.csv               100ms·1초 [start,end) 구간별 도착/수락/거절/처리/수행 건수
+    summary.json                 건수·처리량·판정 지연·큐 대기·이동 1초 최대·키 수(제거 전후)·메모리
+    environment.json             규칙·seed·CPU·OS·Python·패키지 버전·실행 명령
+comparison.csv                   회차마다 한 줄 (summary.json을 펼친 값)
+report.md, *.png                 보고서와 그래프
+```
+
+**재현 방법**: 같은 `--seed`(기본 42)와 같은 `configs/*.yaml`로 다시 실행하면 `experiment.json`의 입력 해시와
+판정·건수가 모두 같다. 판정 지연·메모리는 장비와 순간 부하에 따라 달라진다.
+각 회차는 새 프로세스에서 실행된다(RSS peak가 프로세스 단위이므로).
+
+메모리 지표 세 가지는 측정 범위가 달라 서로 직접 비교하지 않는다.
+- `algorithm_state_peak_bytes`: 기록 없이 판정만 반복할 때의 Python 할당 peak ≈ 알고리즘 상태 크기
+- `tracemalloc_peak_bytes`: 재생기의 판정·이벤트 기록까지 포함한 Python 할당 peak
+- `rss_*_bytes`: 프로세스 전체 상주 메모리(인터프리터·입력 데이터 포함)
+
+### HTTP API와 실제 부하 (4단계)
+
+```bash
+# 서버 하나 직접 띄우기
+python -m rate_limit_lab.api.server --algorithm token_bucket --port 8081 --instance-id A
+curl "http://127.0.0.1:8081/work?client_id=alice"     # 200 / 429 (+ X-RateLimit-* , Retry-After)
+curl "http://127.0.0.1:8081/stats"
+
+# 부하 실험 (서버 기동 → 부하 → 저장 → 서버 종료를 조합마다 반복)
+python scripts/run_http_experiment.py --quick         # 축소: 예열 1초·측정 5초, 인스턴스 1/2, 동시성 1/32, 1회
+python scripts/run_http_experiment.py                 # 명세: 예열 10초·측정 60초, 인스턴스 1/2/4,
+                                                      #       동시성 1/32/128, 3회 (알고리즘 5개 → 약 3시간)
+python scripts/run_http_experiment.py --algorithms token_bucket --instances 4 --concurrency 128 \
+    --replicates 3 --warmup-s 2 --measure-s 10        # 일부만 바꾸기
+python scripts/run_http_experiment.py --quick --exp-dir results/<UTC timestamp>   # 기존 실험 폴더에 추가
+```
+
+- 결과는 `<시나리오>/<알고리즘>/http-i<인스턴스>-c<동시성>/r<N>/`에 로컬 결과와 같은 네 파일로 저장된다.
+- 누출 버킷은 202(큐 접수)로 답하고, 처리 완료는 `GET /requests/{id}`, `GET /events`로 따로 조회한다.
+- 요청마다 **발송 지연**(예정 대비), **HTTP 왕복 지연**, **서버 내부 판정 지연**(`X-Decision-Us`)을 따로 기록한다.
+- 결과 분류는 `ok_200`, `queued_202`, `rejected_429`, `timeout`, `transport_error`, `http_error`로 서로 겹치지 않는다.
+- 인스턴스가 여러 개면 각자 메모리 상태를 따로 가진다(공유 저장소 없음). 요청은 라운드 로빈으로 나눈다.
+- Windows에서는 asyncio 타이머 해상도 때문에 발송 지연이 수~15ms 생길 수 있다. 그래서 따로 기록한다.
 
 ### 공통 계약 요약
 

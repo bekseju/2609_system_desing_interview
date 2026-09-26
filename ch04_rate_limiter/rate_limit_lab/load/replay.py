@@ -50,6 +50,7 @@ class ReplayResult:
     decisions: list[Decision]
     events: list[ReplayEvent]
     stats: dict[str, Any]
+    keys: list[str]  # decisions와 같은 순서의 정책 키
 
 
 @dataclass
@@ -142,7 +143,7 @@ def replay(
         "state_entries_end_after_evict": sum(l.state_entries() for l in limiters.values()),
         "end_ms": end_ms,
     })
-    return ReplayResult(algorithm, decisions, events, stats)
+    return ReplayResult(algorithm, decisions, events, stats, [records[r.request_id].key for r in ordered])
 
 
 def _to_decision(p: _Pending) -> Decision:
